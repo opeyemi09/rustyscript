@@ -1,4 +1,4 @@
-// Minimal runtime shim for RustyScript
+// Minimal runtime shim for RustyScript (fixed move semantics)
 // Exported for CommonJS compatibility (we emit require('./rs_runtime'))
 const META = new WeakMap<object, { moved: boolean, borrowCount: number, mutBorrow: boolean }>();
 
@@ -17,19 +17,29 @@ export function wrap(val: any) {
 }
 
 export function move(box: any) {
+  // If not wrapped, wrap first
   if (!box || !(box as any).__rs_wrapped) {
     const b = wrap(box);
     const meta = ensureMeta(b);
     if (meta.moved) throw new Error('use after move');
     if (meta.borrowCount > 0 || meta.mutBorrow) throw new Error('cannot move while borrowed');
+    // mark source as moved
     meta.moved = true;
-    return b;
+    // create and return a fresh wrapper for the destination with the same data
+    const newBox = { __rs_wrapped: true, __rs_data: b.__rs_data };
+    ensureMeta(newBox);
+    return newBox;
   }
+
   const meta = ensureMeta(box);
   if (meta.moved) throw new Error('use after move');
   if (meta.borrowCount > 0 || meta.mutBorrow) throw new Error('cannot move while borrowed');
+  // mark source as moved
   meta.moved = true;
-  return box;
+  // return a new wrapper that contains the same inner data
+  const newBox = { __rs_wrapped: true, __rs_data: (box as any).__rs_data };
+  ensureMeta(newBox);
+  return newBox;
 }
 
 export function use(box: any) {
