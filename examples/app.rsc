@@ -1,21 +1,21 @@
 // Demo: RustyScript v0 (TypeScript MVP)
-// supports let, moves, borrows (& / &mut), blocks { }
+// uses explicit move(...) and borrow syntax (& / &mut)
 
-let x = "hello";
-let y = x;       // move x -> y
+let x: string = "hello";
+let y = move(x);       // explicit move x -> y
 print(y);
-print(x);       // use-after-move -> runtime error (dev mode)
+print(x);              // compile-time error: use after move (static pass)
 
 {
   let a = { x: 1 };
-  let r = &a;     // immutable borrow
+  let r = &a;          // immutable borrow
   print(r.x);
-  // r is released automatically at end of block
+  // r released automatically at block end
 }
 
 {
   let a = { x: 2 };
-  let m = &mut a; // mutable borrow
+  let m = &mut a;      // mutable borrow
   print(m.x);
-  // mutation could be modeled by directly accessing __rs.use(m) in expanded syntax
+  // m released at block end
 }
