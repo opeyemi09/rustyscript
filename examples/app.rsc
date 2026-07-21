@@ -1,21 +1,29 @@
-// Demo: RustyScript v0 (TypeScript MVP)
-// uses explicit move(...) and borrow syntax (& / &mut)
+// Functions demo: ownership + borrows across calls
+// Note: functions are void in this MVP. Parameters:
+//  - owned param: specify type normally (caller must pass move(x) or a literal)
+//  - immutable borrow: param: &Type  (caller passes &x)
+//  - mutable borrow: param: &mut Type (caller passes &mut x)
 
-let x: string = "hello";
-let y = move(x);       // explicit move x -> y
-print(y);
-print(x);              // compile-time error: use after move (static pass)
-
-{
-  let a = { x: 1 };
-  let r = &a;          // immutable borrow
-  print(r.x);
-  // r released automatically at block end
+function greet(name: string) {
+  // name is owned inside function (local owner)
+  print(name);
 }
 
-{
-  let a = { x: 2 };
-  let m = &mut a;      // mutable borrow
-  print(m.x);
-  // m released at block end
+function inspectBorrow(a: & { x: number }) {
+  // a is an immutable borrow; cannot modify the owner
+  print(a.x);
 }
+
+function incMut(a: &mut { x: number }) {
+  // a is a mutable borrow; we could mutate via __rs.use(a).x = ...
+  // (mutation syntax not formalized in this MVP)
+  print(a.x);
+}
+
+let s = "Alice";
+greet(move(s));   // move s into greet
+// print(s);      // compile-time error: use after move
+
+let obj = { x: 10 };
+inspectBorrow(&obj); // ok: immutable borrow
+incMut(&mut obj);    // ok: mutable borrow (no other borrows present)
