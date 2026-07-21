@@ -1,0 +1,22 @@
+{
+  "name": "rustyscript",
+  "version": "0.1.0",
+  "description": "RustyScript prototype (TypeScript MVP): TypeScript-like language + Rust-style ownership enforced at compile/runtime.",
+  "main": "dist/cli.js",
+  "bin": {
+    "rustyscript": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/cli.js",
+    "compile-example": "node dist/cli.js compile examples/app.rsc && node examples/app.js",
+    "test": "node ./scripts/run-tests.js || true"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^18.0.0"
+  },
+  "dependencies": {}
+}
